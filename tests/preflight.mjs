@@ -9,7 +9,8 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const PROFILE = 'C:/Users/93116/.dsh/profiles/desktop';
+const PROFILE = process.env.DSH_PROFILE ?? path.join(os.homedir(), '.dsh', 'profiles', 'desktop');
+const PYTHON = process.env.TENTACLE_PYTHON ?? 'python';
 const PLUGIN = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const failures = [];
 
@@ -66,7 +67,7 @@ await check('主入口与面板文件能从包里导出', () => {
 });
 
 await check('helper 能编译', () => {
-  execFileSync('E:/ds/resources/runtime/primary-runtime/dependencies/python/python.exe', [
+  execFileSync(PYTHON, [
     '-c',
     'import py_compile,sys; py_compile.compile(sys.argv[1], doraise=True)',
     path.join(PLUGIN, 'helper/sense.py'),

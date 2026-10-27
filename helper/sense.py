@@ -2,13 +2,15 @@
 # -*- coding: utf-8 -*-
 """dsh-whale-sense-pvt helper —— 陪看的眼睛。
 
-每隔 interval 截一张屏，和上一张缩略图比差异；差异够大、又过了冷却期，
-就把整图存成 jpg，并在 stdout 吐一行 JSON 事件。
+只有 watching 为真时才定期截屏；watching 为假时进程保持空闲，不抓屏。
+差异够大、又过了冷却期，就把整图存成 jpg，并在 stdout 吐一行 JSON 事件。
 
 stdin 每行一个 JSON 命令：
-  {"op": "snap"}                      强制截一张（不受阈值/冷却限制）
-  {"op": "config", "intervalMs": 2000, "threshold": 0.06, "cooldownMs": 45000, "maxWidth": 1280}
+  {"op": "snap"}                      强制截一张（不受 watching/阈值/冷却限制）
+  {"op": "config", "intervalMs": 2000, "threshold": 0.06, "cooldownMs": 45000, "maxWidth": 1280, "watching": false}
   {"op": "quit"}
+
+stdin 关闭（EOF）等同于 quit。
 
 stdout 每行一个 JSON：
   {"event": "ready"} / {"event": "change", "path": "...", "score": 0.12, "title": "EVE Online", "at": 1719...}
@@ -17,10 +19,10 @@ stdout 每行一个 JSON：
 """
 
 import ctypes
-import io
 import json
 import os
 import sys
+import threading
 import time
 
 if sys.platform != "win32":
@@ -30,9 +32,9 @@ from ctypes import wintypes
 
 try:
     from PIL import Image, ImageGrab
+    PILLOW_ERROR = None
 except Exception as exc:  # pragma: no cover
-    sys.stderr.write("Pillow 不可用: %r\n" % (exc,))
-    raise SystemExit(2)
+    PILLOW_ERROR = repr(exc)
 
 try:
     ctypes.windll.shcore.SetProcessDpiAwareness(2)
@@ -49,7 +51,9 @@ STATE = {
     "threshold": 0.06,
     "cooldownMs": 45000,
     "maxWidth": 1280,
+    "watching": False,
 }
+STOP = threading.Event()
 OUT_DIR = os.environ.get("SENSE_OUT_DIR") or os.path.join(os.path.expanduser("~"), ".dsh", "storages", "whale-sense-pvt", "frames")
 THUMB = (64, 36)
 
@@ -107,7 +111,6 @@ def save_jpeg(image):
 
 
 def read_commands():
-    buffer = ""
     for chunk in iter(lambda: sys.stdin.readline(), ""):
         line = chunk.strip()
         if not line:
@@ -118,12 +121,14 @@ def read_commands():
             continue
         op = message.get("op")
         if op == "quit":
-            raise SystemExit(0)
+            break
         if op == "config":
             for key in ("intervalMs", "threshold", "cooldownMs", "maxWidth"):
                 value = message.get(key)
                 if isinstance(value, (int, float)):
                     STATE[key] = float(value) if key == "threshold" else int(value)
+            if isinstance(message.get("watching"), bool):
+                STATE["watching"] = message["watching"]
             STATE["intervalMs"] = max(400, min(60000, STATE["intervalMs"]))
             STATE["threshold"] = max(0.005, min(0.9, STATE["threshold"]))
             STATE["cooldownMs"] = max(5000, min(3600000, STATE["cooldownMs"]))
@@ -136,11 +141,14 @@ def read_commands():
                 emit({"event": "snap", "path": path, "title": foreground_title(), "at": int(time.time() * 1000)})
             except Exception as exc:
                 emit({"event": "error", "message": "snap failed: %r" % (exc,)})
-    raise SystemExit(0)
+    # quit 或 stdin 关闭（Host 已退出）都走这里
+    STOP.set()
 
 
 def main():
-    import threading
+    if PILLOW_ERROR is not None:
+        emit({"event": "error", "message": "Pillow 不可用: %s" % PILLOW_ERROR})
+        raise SystemExit(2)
 
     watcher = threading.Thread(target=read_commands, daemon=True)
     watcher.start()
@@ -148,7 +156,11 @@ def main():
     emit({"event": "ready", **STATE})
     previous = None
     last_emit = 0.0
-    while True:
+    while not STOP.is_set():
+        if not STATE["watching"]:
+            previous = None
+            STOP.wait(0.2)
+            continue
         try:
             image = grab_full()
             current = thumb_bytes(image)
@@ -167,7 +179,7 @@ def main():
             previous = current
         except Exception as exc:
             emit({"event": "error", "message": "grab failed: %r" % (exc,)})
-        time.sleep(max(0.15, STATE["intervalMs"] / 1000.0))
+        STOP.wait(max(0.15, STATE["intervalMs"] / 1000.0))
 
 
 if __name__ == "__main__":

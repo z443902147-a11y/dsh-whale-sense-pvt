@@ -94,6 +94,11 @@ try {
   check('采样被夹紧', config.config.intervalMs === 60000, JSON.stringify(config.config));
   check('写着盘上', JSON.parse(fs.readFileSync(path.join(tempHome, 'storages', 'whale-sense-pvt', 'config.json'), 'utf8')).threshold === 0.2);
 
+  // auto 关着时帮工必须空闲，不能偷偷截屏
+  await new Promise((resolve) => setTimeout(resolve, 2600));
+  const idle = await tools.get('sense_state').execute({}, {});
+  check('关着时不采样', idle.lastEvent === null, JSON.stringify(idle.lastEvent));
+
   const snap = await tools.get('sense_snap').execute({}, {});
   check('截到图', typeof snap.path === 'string' && fs.existsSync(snap.path), snap.path);
   check('图有内容', fs.statSync(snap.path).size > 4096);

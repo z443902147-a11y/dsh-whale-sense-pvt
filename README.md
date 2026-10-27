@@ -1,10 +1,10 @@
 # dsh-whale-sense-pvt
 
-让鲸鱼娘看着你的屏幕陪你玩：她一直在看，画面变了、或者你点她一下，就抬眼瞄一眼、说一句，字幕挂在屏幕底部。
+让鲸鱼娘看着你的屏幕陪你玩：打开自动陪看后，她一直在看，画面变了、或者你点她一下，就抬眼瞄一眼、说一句，字幕挂在屏幕底部。
 
-- **陪看**：常驻 Python 帮工定期截屏，比缩略图差异；变化够大就把整图存下来。
+- **陪看**：只有自动陪看开着时才定期截屏，比缩略图差异；变化够大就把整图存下来。关着时帮工空闲，不抓屏。
 - **陪说**：变化被判定值得说话时，通过 `agent.followup()` 把「主人屏幕变了 + 截图路径」塞回会话，我自己用 `read_image` 看一眼，再用 `voice_say`（默认只出字幕）说一句。
-- **刹车**：默认不自动；有冷却（`cooldownMs`）和每小时上限（`maxPerHour`），还能用 `windowMatch` 只盯某个窗口（比如只有玩 EVE 才说话），另有「看我一眼」按钮随时手动触发。
+- **刹车**：默认关闭，此时既不截屏也不说话；有冷却（`cooldownMs`）和每小时上限（`maxPerHour`），还能用 `windowMatch` 只盯某个窗口（比如只有玩 EVE 才说话），另有「看我一眼」按钮随时手动触发（这一下不受开关影响）。
 - **面板**：左下角「鲸鱼陪看」：自动开关、采样间隔、灵敏度、冷却、「看我一眼」。
 
 只支持 Windows（Pillow + Win32 前台窗口标题）。
@@ -34,6 +34,16 @@ dsh plugin --profile web add github:z443902147-a11y/dsh-whale-sense-pvt
 ```
 
 或者手动：profile 的 `dependencies` 加 `"dsh-whale-sense-pvt": "link:<本仓库路径>"`，`bundles` 加 `"dsh-whale-sense-pvt"`，重启。
+
+## 测试
+
+```sh
+# 从普通终端跑测试时，指定一个带 Pillow 的 Python（DSH 自带运行时里就有）
+$env:TENTACLE_PYTHON = "D:\dsh\resources\runtime\primary-runtime\dependencies\python\python.exe"
+npm run test:host
+```
+
+插件在 DSH 里运行时不需要这个变量：会自动扫描 `resources/runtime/*/dependencies/python/python.exe`。
 
 ## 限制
 
