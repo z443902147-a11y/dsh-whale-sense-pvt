@@ -72,7 +72,7 @@ function makeRes() {
 
 async function call(method, url, body) {
   const res = makeRes();
-  await routes.get('/whale-sense').handler(makeReq(method, url, body), res);
+  await routes.get('/whale-sense-pvt').handler(makeReq(method, url, body), res);
   return res;
 }
 
@@ -85,14 +85,14 @@ const dispose = apply(ctx);
 
 try {
   check('三个工具注册', ['sense_state', 'sense_config', 'sense_snap'].every((name) => tools.has(name)));
-  check('面板路由注册', routes.has('/whale-sense'));
+  check('面板路由注册', routes.has('/whale-sense-pvt'));
 
   const state = await tools.get('sense_state').execute({}, {});
   check('自动陪看默认关', state.config.auto === false);
 
   const config = await tools.get('sense_config').execute({ intervalMs: 999999, threshold: 0.2 }, {});
   check('采样被夹紧', config.config.intervalMs === 60000, JSON.stringify(config.config));
-  check('写着盘上', JSON.parse(fs.readFileSync(path.join(tempHome, 'storages', 'whale-sense', 'config.json'), 'utf8')).threshold === 0.2);
+  check('写着盘上', JSON.parse(fs.readFileSync(path.join(tempHome, 'storages', 'whale-sense-pvt', 'config.json'), 'utf8')).threshold === 0.2);
 
   const snap = await tools.get('sense_snap').execute({}, {});
   check('截到图', typeof snap.path === 'string' && fs.existsSync(snap.path), snap.path);
@@ -113,18 +113,18 @@ try {
   check('挂了 turn-stopping 钩子', typeof turnStopping === 'function');
   turnStopping({ agent });
 
-  const look = await call('POST', '/whale-sense/look', {});
+  const look = await call('POST', '/whale-sense-pvt/look', {});
   const body = look.json();
   check('看我一眼返回 ok', look.statusCode === 200 && body.ok === true && body.woke === true, look.body);
   check('真的 followup 了一次', followups.length === 1);
   const message = followups[0] ?? {};
   const text = message?.content?.[0]?.text ?? '';
   check('消息是 user 角色', message.role === 'user');
-  check('来源是 producer-owned 的插件 kind', message.source?.kind === 'plugin:dsh-whale-sense');
+  check('来源是 producer-owned 的插件 kind', message.source?.kind === 'plugin:dsh-whale-sense-pvt');
   check('消息带着截图路径', text.includes(String(body.path ?? '???')));
   check('消息要求只出字幕', text.includes('speak=false'));
 
-  const noAgent = await call('POST', '/whale-sense/snap', {});
+  const noAgent = await call('POST', '/whale-sense-pvt/snap', {});
   check('snap 路由能用', noAgent.statusCode === 200 && noAgent.json().ok === true);
 } finally {
   dispose?.();

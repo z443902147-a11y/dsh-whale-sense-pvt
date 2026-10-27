@@ -1,4 +1,4 @@
-# dsh-whale-sense bundle patch: inserts the companion watcher into a profile's layer stack.
+# dsh-whale-sense-pvt bundle patch: inserts the companion watcher into a profile's layer stack.
 - insert:
-    - id: whale-sense
-      name: 'dsh-whale-sense'
+    - id: whale-sense-pvt
+      name: 'dsh-whale-sense-pvt'

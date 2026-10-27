@@ -1,4 +1,4 @@
-# dsh-whale-sense
+# dsh-whale-sense-pvt
 
 让鲸鱼娘看着你的屏幕陪你玩：她一直在看，画面变了、或者你点她一下，就抬眼瞄一眼、说一句，字幕挂在屏幕底部。
 
@@ -9,10 +9,6 @@
 
 只支持 Windows（Pillow + Win32 前台窗口标题）。
 
-## 宣传片
-
-25 秒，带配音：[assets/promo.mp4](assets/promo.mp4)
-
 ## 工具
 
 | 工具 | 作用 |
@@ -21,23 +17,23 @@
 | `sense_config({...})` | 改设置：auto / intervalMs / threshold / cooldownMs / maxWidth / maxPerHour / quietUntil / windowMatch |
 | `sense_snap()` | 立刻截一张，返回图片路径和前台窗口标题 |
 
-配置存在 `$DSH_HOME/storages/whale-sense/config.json`，截图画在 `storages/whale-sense/frames/`。
+配置存在 `$DSH_HOME/storages/whale-sense-pvt/config.json`，截图画在 `storages/whale-sense-pvt/frames/`。
 
 ## 组成
 
 | 文件 | 作用 |
 | --- | --- |
-| `lib/index.js` | 拉起帮工、解析事件、节流、followup 唤醒、注册工具和 `/whale-sense` 路由 |
+| `lib/index.js` | 拉起帮工、解析事件、节流、followup 唤醒、注册工具和 `/whale-sense-pvt` 路由 |
 | `lib/client.js` | 左下角面板 |
 | `helper/sense.py` | 截屏—缩略图差异—存图—吐 JSON 事件的常驻进程 |
 
 ## 安装
 
 ```sh
-dsh plugin --profile web add github:pairun325/dsh-whale-sense
+dsh plugin --profile web add github:z443902147-a11y/dsh-whale-sense-pvt
 ```
 
-或者手动：profile 的 `dependencies` 加 `"dsh-whale-sense": "link:E:/dswork/plugins/dsh-whale-sense"`，`bundles` 加 `"dsh-whale-sense"`，重启。
+或者手动：profile 的 `dependencies` 加 `"dsh-whale-sense-pvt": "link:<本仓库路径>"`，`bundles` 加 `"dsh-whale-sense-pvt"`，重启。
 
 ## 限制
 

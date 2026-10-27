@@ -7,9 +7,10 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const PROFILE = 'C:/Users/93116/.dsh/profiles/desktop';
-const PLUGIN = 'E:/dswork/plugins/dsh-whale-sense';
+const PLUGIN = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const failures = [];
 
 async function check(label, fn) {
@@ -26,16 +27,16 @@ const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
 
 await check('profile JSON 合法', () => {
   const profile = readJson(path.join(PROFILE, 'package.json'));
-  if (!profile.dependencies?.['dsh-whale-sense']) throw new Error('dependencies 里没有 link');
-  if (!profile.dsh?.profile?.bundles?.includes('dsh-whale-sense')) throw new Error('bundles 里没有');
-  return profile.dependencies['dsh-whale-sense'];
+  if (!profile.dependencies?.['dsh-whale-sense-pvt']) throw new Error('dependencies 里没有 link');
+  if (!profile.dsh?.profile?.bundles?.includes('dsh-whale-sense-pvt')) throw new Error('bundles 里没有');
+  return profile.dependencies['dsh-whale-sense-pvt'];
 });
 
 await check('node_modules 链接指向插件', () => {
-  const target = path.join(PROFILE, 'node_modules/dsh-whale-sense');
+  const target = path.join(PROFILE, 'node_modules/dsh-whale-sense-pvt');
   if (!fs.existsSync(path.join(target, 'package.json'))) throw new Error('链接不存在或没接上');
   const manifest = readJson(path.join(target, 'package.json'));
-  if (manifest.name !== 'dsh-whale-sense') throw new Error(`名字不对：${manifest.name}`);
+  if (manifest.name !== 'dsh-whale-sense-pvt') throw new Error(`名字不对：${manifest.name}`);
   return manifest.version;
 });
 
@@ -52,8 +53,8 @@ await check('manifest 与 bundle 一致', () => {
 
 await check('bundle patch 内容', () => {
   const text = fs.readFileSync(path.join(PLUGIN, 'cordis.patch.yml'), 'utf8');
-  if (!text.includes('id: whale-sense')) throw new Error('缺 insert id');
-  if (!text.includes("name: 'dsh-whale-sense'")) throw new Error('缺 insert name');
+  if (!text.includes('id: whale-sense-pvt')) throw new Error('缺 insert id');
+  if (!text.includes("name: 'dsh-whale-sense-pvt'")) throw new Error('缺 insert name');
 });
 
 await check('主入口与面板文件能从包里导出', () => {

@@ -1,6 +1,7 @@
 {
-  "name": "dsh-whale-sense",
-  "version": "0.1.0",
+  "name": "dsh-whale-sense-pvt",
+  "version": "0.2.0",
+  "private": true,
   "description": "让鲸鱼娘看着你的屏幕陪你玩：检测画面变化，自动看一眼、说一句，字幕挂在屏幕底部。",
   "keywords": [
     "dsh",
@@ -28,11 +29,16 @@
     "README.md",
     "LICENSE"
   ],
+  "scripts": {
+    "test:host": "node tests/host-test.mjs",
+    "test:watch": "node tests/watch-test.mjs",
+    "preflight": "node tests/preflight.mjs"
+  },
   "license": "MIT",
-  "author": "githu-mensk",
+  "author": "z443902147-a11y",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pairun325/dsh-whale-sense.git"
+    "url": "git+https://github.com/z443902147-a11y/dsh-whale-sense-pvt.git"
   },
   "dsh": {
     "bundle": {

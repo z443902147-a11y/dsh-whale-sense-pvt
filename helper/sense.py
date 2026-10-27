@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""dsh-whale-sense helper —— 陪看的眼睛。
+"""dsh-whale-sense-pvt helper —— 陪看的眼睛。
 
 每隔 interval 截一张屏，和上一张缩略图比差异；差异够大、又过了冷却期，
 就把整图存成 jpg，并在 stdout 吐一行 JSON 事件。
@@ -24,7 +24,7 @@ import sys
 import time
 
 if sys.platform != "win32":
-    raise SystemExit("dsh-whale-sense 只支持 Windows")
+    raise SystemExit("dsh-whale-sense-pvt 只支持 Windows")
 
 from ctypes import wintypes
 
@@ -50,7 +50,7 @@ STATE = {
     "cooldownMs": 45000,
     "maxWidth": 1280,
 }
-OUT_DIR = os.environ.get("SENSE_OUT_DIR") or os.path.join(os.path.expanduser("~"), ".dsh", "storages", "whale-sense", "frames")
+OUT_DIR = os.environ.get("SENSE_OUT_DIR") or os.path.join(os.path.expanduser("~"), ".dsh", "storages", "whale-sense-pvt", "frames")
 THUMB = (64, 36)
 
 
